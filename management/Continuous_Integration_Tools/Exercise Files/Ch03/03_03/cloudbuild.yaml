@@ -1,0 +1,30 @@
+steps:
+- name: 'python:3.6'
+  args: ['/usr/bin/make', 'pip', 'upload']
+  env:
+  - 'AWS_DEFAULT_REGION=us-west-2'
+  secretEnv:
+  - 'AWS_ACCESS_KEY_ID'
+  - 'AWS_SECRET_ACCESS_KEY'
+
+- name: 'python:3.6'
+  args: ['/usr/bin/make', 'pip', 'deploy', 'test', 'ENV=staging']
+  env:
+  - 'AWS_DEFAULT_REGION=us-west-2'
+  secretEnv:
+  - 'AWS_ACCESS_KEY_ID'
+  - 'AWS_SECRET_ACCESS_KEY'
+
+- name: 'python:3.6'
+  args: ['/usr/bin/make', 'pip', 'deploy', 'test', 'ENV=production']
+  env:
+  - 'AWS_DEFAULT_REGION=us-west-2'
+  secretEnv:
+  - 'AWS_ACCESS_KEY_ID'
+  - 'AWS_SECRET_ACCESS_KEY'
+
+secrets:
+- kmsKeyName: projects/cloud-build-demo-230421/locations/global/keyRings/aws-key-ring/cryptoKeys/aws-key
+  secretEnv:
+    AWS_ACCESS_KEY_ID: CiQAHUFQVK1rwDIMPA75vY0uTzz86pVran15N6sWCfaAUEjCJ8ISPQD+FkrZG0qfYvq7lLJUTl8RdItCZAcP06XxtNBSIMSyMMf1ePB2jg7bQB1XTDdDvyoFvx/WIVyo2UEfj5M=
+    AWS_SECRET_ACCESS_KEY: CiQAHUFQVG3wzS6C6lxNLH7qZiMONE32MbMtJbiV58S4p91kt5kSUAD+FkrZA4HuQi6I6IL71LM7yiHH0Sg46Drs/OfOtR6Ovvtces6Tz+I0SbZhxwVDUgj1lwC6bjfnZFwBz5MrsgtF31oVMMF16jqc9lPVIgKk

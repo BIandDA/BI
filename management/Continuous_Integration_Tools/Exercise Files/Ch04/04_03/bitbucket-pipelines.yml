@@ -1,0 +1,40 @@
+image: python:3.6
+pipelines:
+  default:
+    - step:
+        name: Test
+        deployment: test
+        caches:
+          - pip
+        script:
+          # Requirements (Stage 1)
+          # trigger the build
+          - pip install --upgrade --requirement requirements.txt
+          # Check (Stage 2)
+          - flake8 --ignore=E501,E231
+          - pylint --errors-only --disable=C0301 --disable=C0326 *.py tests/*.py
+          - python -m unittest --verbose --failfast
+    - step:
+        name: Deploy Staging
+        deployment: staging
+        caches:
+          - pip
+        script:
+          - pip install --upgrade --requirement requirements.txt
+          # Build (Stage 3)
+          - ./upload-new-version.sh
+          # Deploy Staging (Stage 4)
+          - ./deploy-new-version.sh staging
+          # Test Staging (Stage 5)
+          - ./test-environment.sh staging
+    - step:
+        name: Deploy Production
+        deployment: production
+        caches:
+          - pip
+        script:
+          - pip install --upgrade --requirement requirements.txt
+          # Deploy Production (Stage 6)
+          - ./deploy-new-version.sh production
+          # Test Production (Stage 7)
+          - ./test-environment.sh production

@@ -1,0 +1,9 @@
+version: 0.2
+phases:
+  install:
+    commands:
+      - pip install --quiet --upgrade --requirement requirements.txt
+  build:
+    commands:
+      - make lint
+      - make unittest

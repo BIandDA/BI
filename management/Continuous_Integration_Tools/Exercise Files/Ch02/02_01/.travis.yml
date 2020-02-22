@@ -1,0 +1,14 @@
+language: python
+python:
+  - "3.6"
+install:
+  - pip install --quiet --upgrade --requirement requirements.txt
+script:
+  - flake8 --ignore=E501,E231 *.py tests/*.py
+  - pylint --errors-only --disable=C0301 --disable=C0326 *.py tests/*.py
+  - python -m unittest --verbose --failfast
+  - bash ./upload-new-version.sh
+  - bash ./deploy-new-version.sh staging
+  - bash ./test-environment.sh staging
+  - bash ./deploy-new-version.sh production
+  - bash ./test-environment.sh production

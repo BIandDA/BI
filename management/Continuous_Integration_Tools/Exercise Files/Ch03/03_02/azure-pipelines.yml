@@ -1,0 +1,94 @@
+trigger:
+- master
+
+jobs:
+- job: 'Test'
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  strategy:
+    matrix:
+      Python36:
+        python.version: '3.6'
+    maxParallel: 4
+
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+      architecture: 'x64'
+
+  - script: python -m pip install --quiet --upgrade pip && pip install --quiet --requirement requirements.txt
+    displayName: 'Requirements (Stage 1)'
+
+  - script: |
+      flake8 --ignore=E501,E231
+      pylint --errors-only --disable=C0301 --disable=C0326 *.py tests/*.py
+      python -m unittest --verbose --failfast
+    displayName: 'Check (Stage 2)'
+
+- job: 'Staging'
+  dependsOn: 'Test'
+  condition: succeeded('Test')
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  strategy:
+    matrix:
+      Python36:
+        python.version: '3.6'
+    maxParallel: 4
+
+
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+      architecture: 'x64'
+
+  - script: |
+      export AWS_DEFAULT_REGION=us-west-2
+      export AWS_ACCESS_KEY_ID=$(AWS_ACCESS_KEY_ID)
+      export AWS_SECRET_ACCESS_KEY=$(AWS_SECRET_ACCESS_KEY)
+      python -m pip install --quiet --upgrade pip && pip install --quiet --requirement requirements.txt
+      ./upload-new-version.sh
+    displayName: 'Build (Stage 3)'
+
+  - script: |
+      export AWS_DEFAULT_REGION=us-west-2
+      export AWS_ACCESS_KEY_ID=$(AWS_ACCESS_KEY_ID)
+      export AWS_SECRET_ACCESS_KEY=$(AWS_SECRET_ACCESS_KEY)
+      ./deploy-new-version.sh staging
+    displayName: 'Deploy Staging (Stage 4)'
+
+  - script: ./test-environment.sh staging
+    displayName: 'Test Staging (Stage 5)'
+
+- job: 'Production'
+  dependsOn: 'Staging'
+  condition: succeeded('Staging')
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  strategy:
+    matrix:
+      Python36:
+        python.version: '3.6'
+    maxParallel: 4
+
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+      architecture: 'x64'
+
+  - script: |
+      python -m pip install --quiet --upgrade pip && pip install --quiet --requirement requirements.txt
+    displayName: 'Requirements'
+
+  - script: |
+      export AWS_DEFAULT_REGION=us-west-2
+      export AWS_ACCESS_KEY_ID=$(AWS_ACCESS_KEY_ID)
+      export AWS_SECRET_ACCESS_KEY=$(AWS_SECRET_ACCESS_KEY)
+      ./deploy-new-version.sh production
+    displayName: 'Deploy Production (Stage 6)'
+
+  - script: ./test-environment.sh production
+    displayName: 'Test Production (Stage 7)'

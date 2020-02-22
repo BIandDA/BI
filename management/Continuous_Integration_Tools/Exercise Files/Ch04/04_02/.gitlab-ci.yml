@@ -1,0 +1,62 @@
+stages:
+    - Requirements
+    - Test
+    - Deploy Staging
+    - Deploy Production
+
+requirements:
+    stage: Requirements
+    image: python:3.6
+    cache:
+        key: venv
+        paths:
+        - venv
+    script:
+        # Requirements (Stage 1)
+        - pip install -U virtualenv
+        - python -m virtualenv venv
+        - venv/bin/pip install --upgrade --requirement requirements.txt
+test:
+    stage: Test
+    image: python:3.6
+    cache:
+        key: venv
+        paths:
+        - venv
+        policy: pull
+    script:
+        - source venv/bin/activate
+        # Check (Stage 2)
+        - flake8 --ignore=E501,E231 *.py tests/*.py
+        - pylint --errors-only --disable=C0301 --disable=C0326 *.py tests/*.py
+        - python -m unittest discover --verbose
+staging:
+    stage: Deploy Staging
+    image: python:3.6
+    cache:
+        key: venv
+        paths:
+        - venv
+        policy: pull
+    script:
+        - source venv/bin/activate
+        # Build (Stage 3)
+        - ./upload-new-version.sh
+        # Deploy Staging (Stage 4)
+        - ./deploy-new-version.sh staging
+        # Test Staging (Stage 5)
+        - ./test-environment.sh staging
+production:
+    stage: Deploy Production
+    image: python:3.6
+    cache:
+        key: venv
+        paths:
+        - venv
+        policy: pull
+    script:
+        - source venv/bin/activate
+        # Deploy Production (Stage 6)
+        - ./deploy-new-version.sh production
+        # Test Production (Stage 7)
+        - ./test-environment.sh production

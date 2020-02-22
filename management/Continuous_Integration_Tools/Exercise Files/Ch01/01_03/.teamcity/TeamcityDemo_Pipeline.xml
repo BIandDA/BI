@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<build-type xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" uuid="2c208093-a5ed-4b98-8799-3eea8b1da31d" xsi:noNamespaceSchemaLocation="http://www.jetbrains.com/teamcity/schemas/2018.1/project-config.xsd">
+  <name>Pipeline</name>
+  <description />
+  <settings>
+    <parameters>
+      <param name="env.AWS_ACCESS_KEY_ID" value="zxx362a35ac520668a294fb705feca3fd1218978e369077db49" spec="password description='AWS_ACCESS_KEY_ID' readOnly='true' label='AWS_ACCESS_KEY_ID' display='hidden'" />
+      <param name="env.AWS_DEFAULT_REGION" value="us-west-2" />
+      <param name="env.AWS_SECRET_ACCESS_KEY" value="zxx32994b069953113f6e42ab0da1bbd68db1801461cf26c0d1eeb5425410992b220098f87209201c98775d03cbe80d301b" spec="password display='hidden' description='AWS_SECRET_ACCESS_KEY' readOnly='true' label='AWS_SECRET_ACCESS_KEY'" />
+    </parameters>
+    <build-runners>
+      <runner id="RUNNER_3" name="Requirements" type="simpleRunner">
+        <parameters>
+          <param name="script.content"><![CDATA[#!/bin/bash
+python3 -m virtualenv venv
+source venv/bin/activate
+pip install --upgrade --requirement requirements.txt]]></param>
+          <param name="teamcity.step.mode" value="default" />
+          <param name="use.custom.script" value="true" />
+        </parameters>
+      </runner>
+      <runner id="RUNNER_2" name="Check" type="simpleRunner">
+        <parameters>
+          <param name="script.content"><![CDATA[#!/bin/bash
+source venv/bin/activate
+flake8 --ignore=E501,E231 *.py tests/*.py
+pylint --errors-only --disable=C0301 --disable=C0326 *.py tests/*.py
+python -m unittest --verbose --failfast]]></param>
+          <param name="teamcity.step.mode" value="default" />
+          <param name="use.custom.script" value="true" />
+        </parameters>
+      </runner>
+      <runner id="RUNNER_4" name="Build" type="simpleRunner">
+        <parameters>
+          <param name="script.content"><![CDATA[#!/bin/bash
+source venv/bin/activate
+./upload-new-version.sh]]></param>
+          <param name="teamcity.step.mode" value="default" />
+          <param name="use.custom.script" value="true" />
+        </parameters>
+      </runner>
+      <runner id="RUNNER_5" name="Deploy Staging" type="simpleRunner">
+        <parameters>
+          <param name="script.content"><![CDATA[#!/bin/bash
+source venv/bin/activate
+./deploy-new-version.sh staging]]></param>
+          <param name="teamcity.step.mode" value="default" />
+          <param name="use.custom.script" value="true" />
+        </parameters>
+      </runner>
+      <runner id="RUNNER_6" name="Test Staging" type="simpleRunner">
+        <parameters>
+          <param name="script.content"><![CDATA[#!/bin/bash
+./test-environment.sh staging]]></param>
+          <param name="teamcity.step.mode" value="default" />
+          <param name="use.custom.script" value="true" />
+        </parameters>
+      </runner>
+      <runner id="RUNNER_7" name="Deploy Production" type="simpleRunner">
+        <parameters>
+          <param name="script.content"><![CDATA[#!/bin/bash
+source venv/bin/activate
+./deploy-new-version.sh production]]></param>
+          <param name="teamcity.step.mode" value="default" />
+          <param name="use.custom.script" value="true" />
+        </parameters>
+      </runner>
+      <runner id="RUNNER_9" name="Test Production" type="simpleRunner">
+        <parameters>
+          <param name="script.content"><![CDATA[#!/bin/bash
+./test-environment.sh production]]></param>
+          <param name="teamcity.step.mode" value="default" />
+          <param name="use.custom.script" value="true" />
+        </parameters>
+      </runner>
+    </build-runners>
+    <vcs-settings>
+      <vcs-entry-ref root-id="TeamcityDemo_HttpsGithubComAutomate6500teamcityDemoRefsHeadsMaster" />
+    </vcs-settings>
+    <requirements />
+    <build-triggers>
+      <build-trigger id="vcsTrigger" type="vcsTrigger">
+        <parameters>
+          <param name="branchFilter" value="+:*" />
+          <param name="enableQueueOptimization" value="true" />
+          <param name="quietPeriodMode" value="DO_NOT_USE" />
+        </parameters>
+      </build-trigger>
+    </build-triggers>
+    <cleanup />
+  </settings>
+</build-type>
+

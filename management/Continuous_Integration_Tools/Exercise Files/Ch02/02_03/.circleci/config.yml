@@ -1,0 +1,189 @@
+version: 2
+jobs:
+  Requirements:
+    docker:
+      - image: circleci/python:3.6.1
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "requirements.txt" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+
+      - run:
+          name: Requirements
+          command: |
+            python3 -m venv local
+            source local/bin/activate
+            pip install --upgrade --requirement requirements.txt
+
+      - save_cache:
+          paths:
+            - ./local
+          key: v1-dependencies-{{ checksum "requirements.txt" }}
+
+  Check:
+    docker:
+      - image: circleci/python:3.6.1
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "requirements.txt" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+
+      - run:
+          name: Check
+          command: |
+            source local/bin/activate
+            make lint unittest
+
+  Build:
+    docker:
+      - image: circleci/python:3.6.1
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "requirements.txt" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+
+      - run:
+          name: Build
+          command: |
+            source local/bin/activate
+            make upload
+
+  Deploy-Staging:
+    docker:
+      - image: circleci/python:3.6.1
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "requirements.txt" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+
+      # deploy staging
+      - run:
+          name: Deploy Staging
+          command: |
+            source local/bin/activate
+            make deploy ENV=staging
+
+  Test-Staging:
+    docker:
+      - image: circleci/python:3.6.1
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "requirements.txt" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+
+      # test staging
+      - run:
+          name: Test Staging
+          command: |
+              make test ENV=staging
+
+  Deploy-Production:
+    docker:
+      - image: circleci/python:3.6.1
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "requirements.txt" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+
+      # deploy production
+      - run:
+          name: Deploy Production
+          command: |
+            source local/bin/activate
+            make deploy ENV=production
+
+  Test-Production:
+    docker:
+      - image: circleci/python:3.6.1
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "requirements.txt" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+
+      # test production
+      - run:
+          name: Test Production
+          command: |
+              make test ENV=production
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - Check
+      - Build:
+          requires:
+            - Check
+      - Deploy-Staging:
+          requires:
+            - Check
+            - Build
+      - Test-Staging:
+          requires:
+            - Deploy-Staging
+      - Deploy-Production:
+          requires:
+            - Check
+            - Build
+            - Deploy-Staging
+            - Test-Staging
+      - Test-Production:
+          requires:
+            - Deploy-Production
+# trigger build with this change
