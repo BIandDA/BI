@@ -9,3 +9,7 @@
 | Means | 平均値| -
 | Medians | 中間値| -
 | Standard Deviation | 標準偏差| -
+| Sampling | 标本| -
+| Confidence intervals | -| 信頼区間
+| Hypothesis testing | - |仮説検定|
+| inferential testing | | 推論テスト

@@ -1,0 +1,10 @@
+<head>
+  <title>{% block title %}{% endblock %}</title>
+</head>
+
+{% for message in get_flashed_messages() %}
+<h2>{{ message }}</h2>
+{% endfor %}
+
+{% block main %}
+{% endblock %}

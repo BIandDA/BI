@@ -1,0 +1,15 @@
+<h1>URL Shortener</h1>
+
+{% for message in get_flashed_messages() %}
+<h2>{{ message }}</h2>
+{% endfor %}
+
+<form action="your-url" method="post">
+  <label for="url">Website URL</label>
+  <input type="url" name="url" value="" required>
+  <br>
+  <label for="code">Short Name</label>
+  <input type="text" name="code" value="" required>
+  <br>
+  <input type="submit" value="Shorten">
+</form>
