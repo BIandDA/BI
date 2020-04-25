@@ -12,12 +12,15 @@
 | Sampling | 标本| -
 | Confidence intervals | -| 信頼区間
 | Hypothesis testing | - |仮説検定|
+| t-test ||  
 | inferential testing | | 推論テスト
 | skewness and kurtosis| 偏度和峰度 | 
 | proportion | 比例 | 割合
 | descriptive statistics|
 | outliers | 外れ値
 | imputation | 帰属計算
+| bivariate regression || 二変量解析
+| linear regression|
 
 
 

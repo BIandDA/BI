@@ -41,5 +41,42 @@
   * x2[is.na(x2)] <- 0
   * x3 <- ifelse(is.na(x1), 0, x1)
 - Challenge: Transforming skewed data to pull in outliers
-# 5. 
+
+# 5. Working with Data file
+- Selecting cases
+- Analyzing by subgroup
+- Merging files
+- Challenge: Analyzing guinea pig data subgroups
+- Solution
+
+# 6. Charts for Associations
+- Creating bar charts of group means
+- Creating grouped box plots
+- Creating scatter plots
+
+# 7. Statistics for Associations
+- Calculating correlation
+  * cor(swiss)
+  * cor.test(swiss$Fertility, swiss$Education)
+  * rcorr(as.matrix(swiss)
+- Computing a bivariate regression
+- Cteomparing paired means: Paired t-test
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
